@@ -20,13 +20,32 @@ For a hot-reloading loop on your machine you need **Node 24.1.0** and **npm 11.5
 
 ```bash
 npm install
+npx prisma db push   # creates prisma/dev.db and generates the client
 npm run dev
 ```
 
 The dev server runs on **http://localhost** and reloads on save.
 Edit **app/page.js and app/Counter.js** to change the app.
 
+## Database
+
+The task list is stored in a self-contained **SQLite** file — there is no database
+server in any environment. The schema is `prisma/schema.prisma`; the connection string
+comes from `DATABASE_URL` (default `file:./prisma/dev.db`), wired up in `prisma.config.ts`.
+
+`app/page.js` is a server component that queries Prisma directly (marked
+`force-dynamic` so it re-reads on every request); `app/api/tasks/route.js` returns the
+same data as JSON. The client is created once in `lib/prisma.js` and cached on
+`globalThis` so dev hot-reloads do not open a new connection each time.
+
+Change the schema, then re-sync with:
+
+```bash
+npx prisma db push
+```
+
 ## Stack
 
 - Node 24.1.0 / npm 11.5.0
 - Next.js 16.1.6
+- Prisma 7.3.0 (`@prisma/adapter-better-sqlite3`)
