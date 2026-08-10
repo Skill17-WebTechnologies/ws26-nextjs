@@ -5,11 +5,17 @@
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 80",
     "build": "next build",
-    "start": "next start -H 0.0.0.0 -p 80"
+    "start": "next start -H 0.0.0.0 -p 80",
+    "db:push": "prisma db push"
   },
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "7.3.0",
+    "@prisma/client": "7.3.0",
     "next": "16.1.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "prisma": "7.3.0"
   }
 }
