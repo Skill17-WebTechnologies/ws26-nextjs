@@ -18,12 +18,17 @@ The app needs one environment variable, a MySQL connection string, resolved in t
 cp .env.example .env   # then fill in your database
 ```
 
+Nothing is hardcoded: `lib/prisma.js`, the `Dockerfile` and `docker-compose.yml` contain
+no host, user or password. `docker compose` also starts a local MySQL server using the
+same `.env`, so the app and the database cannot drift apart.
+
 Note that Prisma 7's CLI does not read `.env` by itself; `prisma.config.ts` loads it with
 `process.loadEnvFile()`.
 
 ## Run it
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
 
@@ -46,6 +51,27 @@ npm run dev
 
 The dev server runs on **http://localhost** and reloads on save.
 Edit **app/page.js** and **app/Counter.js** to change the app.
+
+## Checking the connection
+
+```bash
+curl -fsS http://localhost/api/db-check
+```
+
+```json
+{ "ok": true, "driver": "mysql", "host": "db", "port": 3306, "database": "app",
+  "user": "app", "server_version": "8.4.11", "latency_ms": 1,
+  "demo_table": "next_tasks present" }
+```
+
+It returns **503** when the connection fails, naming the host, database and user it tried
+and the driver's error code — `ER_ACCESS_DENIED_ERROR` for a wrong password, `ENOTFOUND`
+for a wrong host. The password is never in the response. Every WSC2026 template answers
+the same check, so one command works whatever stack you chose.
+
+The check talks to MySQL through the `mariadb` driver rather than Prisma, because Prisma
+reports every connection problem as the same ten-second pool timeout. Whether Prisma
+itself works is answered by `/api/tasks`.
 
 ## Database
 
@@ -87,3 +113,5 @@ ordinary no-op. Migrations ship as `CREATE TABLE IF NOT EXISTS` to make that saf
 - Node 24.1.0 / npm 11.5.0
 - Next.js 16.1.6
 - Prisma 7.3.0 (`@prisma/adapter-mariadb`, MySQL driver adapter)
+- `mariadb` 3.4.5 — the driver, used directly by `/api/db-check` for precise errors
+- MySQL 8.4 (started by `docker compose` for local development)
